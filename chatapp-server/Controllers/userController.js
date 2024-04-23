@@ -74,12 +74,38 @@ const loginUser = async (req, res) => {
             token
         });
     } catch(err) {
-
+        console.log(err);
+        res.status(500).json(err.message);
     }
 };
 
+const findUser = async (req, res) => {
+    const userId = req.params.userId;
+
+    try {
+        const user = await userModel.findById(userId);
+        res.status(200).json(user);
+    } catch(err) {
+        console.log(err);
+        res.status(500).json(err.message);
+    }
+}
+
+
+const getUsers = async (req, res) => {
+
+    try {
+        const users = await userModel.find();
+        res.status(200).json(user);
+    } catch(err) {
+        console.log(err);
+        res.status(500).json(err.message);
+    }
+}
 
 module.exports = {
     registerUser,
     loginUser,
+    findUser,
+    getUsers,
 }
