@@ -10,10 +10,16 @@ export const AuthContextProvider = ({ children }) => {
         email: "",
         password: "",
       };
+    const initialLoginInfo = {
+        name: "",
+        email: "",
+        password: "",
+      };
   const [user, setUser] = useState(null);
-  const [registerError, setRegisterError] = useState(null);
-  const [isRegisterLoading, setIsRegisterLoading] = useState(false);
+  const [isError, setIsError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [registerInfo, setRegisterInfo] = useState(initialRegisterInfo);
+  const [loginInfo, setLoginInfo] = useState(initialLoginInfo);
 
   console.log("User", user);
 
@@ -26,22 +32,26 @@ export const AuthContextProvider = ({ children }) => {
     setRegisterInfo(info);
   }, []);
 
+  const updateLoginInfo = useCallback((info) => {
+    setLoginInfo(info);
+  }, []);
+
   const registerUser = useCallback(async (e) => {
 
     e.preventDefault();
 
-    setIsRegisterLoading(true);
-    setRegisterError(null);
+    setIsLoading(true);
+    setIsError(null);
 
     const response = await postRequest(
       `${baseUrl}/users/register`,
       JSON.stringify(registerInfo)
     );
 
-    setIsRegisterLoading(false);
+    setIsLoading(false);
 
     if (response.error) {
-      setRegisterError(response);
+      return setIsError(response);
     }
 
     localStorage.setItem("User", JSON.stringify(response));
@@ -49,10 +59,34 @@ export const AuthContextProvider = ({ children }) => {
 
   }, [registerInfo]);
 
+
+  const loginUser = useCallback(async (e) => {
+    e.preventDefault();
+
+    setIsLoading(true);
+    setIsError(null);
+
+    const response = await postRequest(
+      `${baseUrl}/users/login`,
+      JSON.stringify(loginInfo)
+    );
+
+    setIsLoading(false);
+
+    if(response.error) {
+      return setIsError(response)
+    }
+
+    localStorage.setItem("User", JSON.stringify(response));
+
+    setUser(response)
+
+  }, [loginInfo]);
+
   const logoutUser = useCallback(() => {
     localStorage.removeItem("User");
     setUser(null);
-  }, [])
+  }, []);
 
   return (
     <AuthContext.Provider
@@ -61,9 +95,12 @@ export const AuthContextProvider = ({ children }) => {
         registerInfo,
         updateRegisterInfo,
         registerUser,
-        registerError,
-        isRegisterLoading,
-        logoutUser
+        isError,
+        isLoading,
+        logoutUser,
+        loginUser,
+        loginInfo,
+        updateLoginInfo
       }}
     >
       {children}
